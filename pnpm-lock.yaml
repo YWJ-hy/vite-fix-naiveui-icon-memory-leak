@@ -43,8 +43,8 @@ importers:
         specifier: ^0.1.4
         version: 0.1.4(vue@3.5.10(typescript@5.4.5))
       naive-ui:
-        specifier: ^2.40.1
-        version: 2.40.1(vue@3.5.10(typescript@5.4.5))
+        specifier: ^2.40.4
+        version: 2.40.4(vue@3.5.10(typescript@5.4.5))
       vue:
         specifier: ^3.4.29
         version: 3.5.10(typescript@5.4.5)
@@ -2067,8 +2067,8 @@ packages:
   mz@2.7.0:
     resolution: {integrity: sha512-z81GNO7nnYMEhrGh9LeymoE4+Yr0Wn5McHIZMK5cfQCl+NDX08sCZgUc9/6MHni9IWuFLm1Z3HTCXu2z9fN62Q==}
 
-  naive-ui@2.40.1:
-    resolution: {integrity: sha512-3NkL+vLRQZKQxCHXa+7xiD6oM74OrQELaehDkGYRYpr6kjT+JJB+Z7h+5LC70gn8VkbgCAETv0+uRWF+6MLlgQ==}
+  naive-ui@2.40.4:
+    resolution: {integrity: sha512-SDFbW9/VEZix/gmzj54jH6c0YDBVM6o0mG1520RAWKtPSqVrAp5r8qLi8dYvvDmcs/qoRbzM3QGuA4GxQJ/iEg==}
     peerDependencies:
       vue: ^3.0.0
 
@@ -4936,7 +4936,7 @@ snapshots:
       object-assign: 4.1.1
       thenify-all: 1.6.0
 
-  naive-ui@2.40.1(vue@3.5.10(typescript@5.4.5)):
+  naive-ui@2.40.4(vue@3.5.10(typescript@5.4.5)):
     dependencies:
       '@css-render/plugin-bem': 0.15.14(css-render@0.15.14)
       '@css-render/vue3-ssr': 0.15.14(vue@3.5.10(typescript@5.4.5))

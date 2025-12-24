@@ -1,6 +1,7 @@
-import type { Plugin } from 'vite'
+import type { Plugin, ResolvedConfig } from 'vite'
 import type { Option } from './types'
 import { existsSync, readFileSync } from 'node:fs'
+import { createRequire } from 'node:module'
 import { dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import MagicString from 'magic-string'
@@ -8,18 +9,58 @@ import { createFilter } from 'vite'
 import { transformDev, transformMap } from './transformMap'
 
 const getVirtualPath = () => {
-  let _dirname_: string;
+  let _dirname_: string
   try {
-    _dirname_ = __dirname;
-  } catch {
-    _dirname_ = dirname(fileURLToPath(import.meta.url));
+    _dirname_ = __dirname
+  }
+  catch {
+    _dirname_ = dirname(fileURLToPath(import.meta.url))
   }
   return _dirname_.replace(/[/\\]dist$/, '/src/virtual')
 }
 
+/**
+ * 比较版本号
+ * @returns true 如果 version >= target
+ */
+function compareVersion(version: string, target: string): boolean {
+  const v1 = version.split('.').map(Number)
+  const v2 = target.split('.').map(Number)
+  for (let i = 0; i < Math.max(v1.length, v2.length); i++) {
+    const n1 = v1[i] || 0
+    const n2 = v2[i] || 0
+    if (n1 > n2)
+      return true
+    if (n1 < n2)
+      return false
+  }
+  return true
+}
+
+/**
+ * 获取 naive-ui 版本号
+ */
+function getNaiveUIVersion(root: string): string | null {
+  try {
+    // 尝试使用 createRequire 来解析 naive-ui 的 package.json
+    const require = createRequire(root.endsWith('/') ? root : `${root}/`)
+    const pkgPath = require.resolve('naive-ui/package.json')
+    const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'))
+    return pkg.version
+  }
+  catch {
+    // 如果解析失败，返回 null
+    return null
+  }
+}
+
+// naive-ui >= 2.40.4 已修复内存泄漏问题
+const FIXED_VERSION = '2.40.4'
+
 const ViteFixNaiveuiIcon = ({ apply }: Option): Plugin[] => {
   const VirtualPath = getVirtualPath()
   let isBuild = false
+  let skipFix = false
   let fixReplaceableFilter: (id: string | unknown) => boolean
   let fixExportDefaultFilter: (id: string | unknown) => boolean
   return [
@@ -27,6 +68,14 @@ const ViteFixNaiveuiIcon = ({ apply }: Option): Plugin[] => {
       name: 'vite-fix-naiveui-icon:pre',
       apply,
       enforce: 'pre',
+      configResolved(config: ResolvedConfig) {
+        // 检查 naive-ui 版本，>= 2.40.4 已修复内存泄漏问题
+        const version = getNaiveUIVersion(config.root)
+        if (version && compareVersion(version, FIXED_VERSION)) {
+          skipFix = true
+          config.logger.info(`[vite-fix-naiveui-icon] naive-ui@${version} >= ${FIXED_VERSION}, skip fix`)
+        }
+      },
       config(_, { command }) {
         if (command === 'build') {
           isBuild = true
@@ -57,6 +106,8 @@ const ViteFixNaiveuiIcon = ({ apply }: Option): Plugin[] => {
         }
       },
       transform(code, id) {
+        if (skipFix)
+          return
         if (!fixReplaceableFilter(id) && !fixExportDefaultFilter(id))
           return
         const magicString = new MagicString(code)
@@ -73,6 +124,8 @@ const ViteFixNaiveuiIcon = ({ apply }: Option): Plugin[] => {
       apply,
       enforce: 'post',
       transform(code, id) {
+        if (skipFix)
+          return
         if (!fixReplaceableFilter(id))
           return
         const magicString = new MagicString(code)
@@ -120,6 +173,8 @@ const ViteFixNaiveuiIcon = ({ apply }: Option): Plugin[] => {
       apply,
       enforce: 'post',
       transform(code, id) {
+        if (skipFix)
+          return
         if (!fixExportDefaultFilter(id))
           return
         const magicString = new MagicString(code)

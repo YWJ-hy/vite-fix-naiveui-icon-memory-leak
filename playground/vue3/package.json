@@ -13,7 +13,7 @@
   "dependencies": {
     "@vicons/ionicons5": "^0.12.0",
     "@vicons/utils": "^0.1.4",
-    "naive-ui": "^2.40.1",
+    "naive-ui": "^2.40.4",
     "vue": "^3.4.29"
   },
   "devDependencies": {
